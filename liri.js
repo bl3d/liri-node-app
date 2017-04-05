@@ -21,7 +21,7 @@ var liri = {
   init: function() {
     //send arguments to liri, if none exist, this should prompt inquirer (liri.welcome)
     if (process.argv.length < 2 || process.argv[2] === undefined) {
-      liri.logThis('• LIRI called with no parameters, user will be promted...', true);
+      liri.logThis('• LIRI called with no parameters, user will be prompted...', true);
       liri.welcome();      
     } else {
       liri.logThis('• LIRI called with parameters, processing request...', true);
@@ -88,7 +88,7 @@ var liri = {
             liri.logThis('  ____________________~ fin ~____________________\n\n');
             console.log('Go on, ask me another!\n\n');
           } else {
-            liri.logThis("Sorry, there was an error connecting to Twitter, please try again soon.");
+            liri.logThis("Sorry, there was an error connecting to Twitter, please try again soon.\n\n");
           }
         });
         break;
@@ -103,7 +103,7 @@ var liri = {
           query: song
         }, function(err, data) {
           if (err) {
-            liri.logThis("Sorry, there was an error connecting to Spotify, please try again soon.");
+            liri.logThis("Sorry, there was an error connecting to Spotify, please try again soon.\n\n");
           } else {
             // console.log(data);
             var thisSong = data.tracks.items[0];
@@ -168,7 +168,7 @@ var liri = {
               console.log('Go on, ask me another!\n\n');
 
             } else {
-              liri.logThis("Sorry, I couldn\'t find that movie, please try again");
+              liri.logThis("Sorry, I couldn\'t find that movie, please try again\n\n");
             }
 
           }
@@ -187,18 +187,18 @@ var liri = {
               liri.performAction(dataArr[0], dataArr[1]);
               liri.logThis('text file sends it\'s command back through LIRI', true);
             } else {
-              liri.logThis('Hey! What are you doing, trying to send me into recursion hell?!');
+              liri.logThis('Hey! What are you doing, trying to send me into recursion hell?!\n\n');
             }
 
           } else {
-            liri.logThis('Sorry, I had an issue processing this request, please try again or run another function.');
+            liri.logThis('Sorry, I had an issue processing this request, please try again or run another function.\n\n');
           }
 
         });
         break;
 
       default:
-        liri.logThis("Sorry, I didn't understand that.\n Please try again or just type 'node liri.js' to be guided through the options!");
+        liri.logThis("Sorry, I didn't understand that.\n Please try again or just type 'node liri.js' to be guided through the options!\n\n");
 
     }
 
