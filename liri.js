@@ -3,15 +3,13 @@ var fs = require("fs"),
     keys = require("./keys.js"),
     inquirer = require("inquirer"), //https://www.npmjs.com/package/inquirer
     request = require("request"), //https://www.npmjs.com/package/request
-    twitter = require("twitter"), //https://www.npmjs.com/package/twitter
+    Twitter = require("twitter"), //https://www.npmjs.com/package/twitter
     spotify = require("spotify"); //https://www.npmjs.com/package/spotify
 
 
 
 //create logic for LIRI
 var liri = {
-
-  name: null,
 
   choiceArray: [
     "my-tweets",
@@ -34,12 +32,8 @@ var liri = {
   welcome: function() {
     //if file is invoked with node but no additional params, ask the user's name and what they would like to do
     inquirer.prompt([{
-        type: "input",
-        message: "What is your name?",
-        name: "name"
-      }, {
         type: "list",
-        message: "What would you like to know?",
+        message: "Hi, What would you like to know?!",
         choices: [
           "1) Recent Tweets?",
           "2) Info about a specific song?",
@@ -48,10 +42,7 @@ var liri = {
         ],
         name: "action"
       } 
-    ]).then(function(user) {
-
-      //set user name in liri object for personalized response later
-      liri.name = user.name;
+    ]).then(function(user) { 
 
       //get index in selected answer for conversion
       var choiceIndex = parseInt(user.action.split(')')) - 1;
@@ -68,78 +59,120 @@ var liri = {
             message: "What "+type+" would you like info on?",
             name: "specificInfo"
           } 
-        ]).then(function(request) {
-          liri.performAction(liri.choiceArray[choiceIndex], request.specificInfo);
+        ]).then(function(query) {
+          liri.performAction(liri.choiceArray[choiceIndex], query.specificInfo);
         });        
       }
     });
 
   },
 
-  performAction: function(action, request) {   
+  performAction: function(action, query) {   
 
     switch (action){
 
-      case "my-tweets":
-        console.log("tweet me!");
-        /*var client = new Twitter({
-          consumer_key: '',
-          consumer_secret: '',
-          bearer_token: ''
-        });
+      case "my-tweets": 
+        var client = new Twitter(keys.twitterKeys);
 
-        client.get('statuses/user_timeline', { screen_name: 'nodejs', count: 20 }, function(error, tweets, response) {
+        client.get('statuses/user_timeline', { count: 20 }, function(error, tweets, response) {
           if (!error) {
-            res.status(200).render('index', { title: 'Express', tweets: tweets });
+            // console.log(tweets);
+            for (var i = 0; i < tweets.length; i++) {
+              console.log((i+1)+') '+tweets[i].created_at+':\n'+'"'+tweets[i].text+'"');
+            };
           }
           else {
-            res.status(500).json({ error: error });
+            console.log("Sorry, there was an error connecting to Twitter, please try again soon.");
           }
-        });*/
+        });
         break;
 
-      case "spotify-this-song":
-        console.log("song me!");
+      case "spotify-this-song": 
+        var song = (query) ? query : 'The Sign Ace of Base';
 
         //artist OR album OR track
-        /*spotify.search({ type: 'track', query: 'dancing in the moonlight' }, function(err, data) {
+        spotify.search({ type: 'track', query: song }, function(err, data) {
             if ( err ) {
-                console.log('Error occurred: ' + err);
-                return;
+              console.log("Sorry, there was an error connecting to Spotify, please try again soon."); 
             }
-         
-            // Do something with 'data' 
-        });*/
+            else{
+              // console.log(data);
+              var thisSong = data.tracks.items[0];
+              console.log('Artist: '+thisSong.artists[0].name);
+              console.log('Song Name: '+thisSong.name);
+              console.log('Preview URL: '+thisSong.preview_url);
+              console.log('Album: '+thisSong.album.name);                          
+            }
+        });
         break;
 
-      case "movie-this":
-        console.log("movie me!");
-        /*request("http://www.omdbapi.com/?t=remember+the+titans&y=&plot=short&r=json", function(error, response, body) { 
+      case "movie-this": 
+        var movie = (query) ? query.replace(" ", "+") : 'Mr.Nobody';
+
+        request("http://www.omdbapi.com/?t="+movie+"&y=&plot=short&r=json", function(error, response, body) { 
           if (!error && response.statusCode === 200) {  
-            console.log("The movie's rating is: " + JSON.parse(body).imdbRating);
+            // console.log(JSON.parse(body));
+            if (JSON.parse(body).Response != 'False') {
+              var thisData = JSON.parse(body);
+               
+               if (thisData.Title) {
+                console.log('* Title: '+thisData.Title);
+               };                
+               
+               if (thisData.Year) {
+                console.log('* Year: '+thisData.Year);
+               };                
+               
+               if (thisData.imdbRating) {
+                console.log('* IMDB Rating: '+thisData.imdbRating);
+               };                
+               
+               if (thisData.Country) {
+                console.log('* Country: '+thisData.Country);
+               };                
+               
+               if (thisData.Language) {
+                console.log('* Language: '+thisData.Language);
+               };                
+               
+               if (thisData.Plot) {
+                console.log('* Plot: '+thisData.Plot);
+               };                
+               
+               if (thisData.Actors) {
+                console.log('* Actors: '+thisData.Actors);
+               };                
+
+               if (thisData.Ratings[1]) {
+                console.log('* Rotten Tomatoes: '+thisData.Ratings[1].Value);
+               };         
+
+            } else{
+              console.log("Sorry, I couldn\'t find that movie, please try again");
+            }
+       
           }
-        });*/
+        });
         break;
 
-      case "do-what-it-says":
-        console.log("do... me?!");
-        /*fs.readFile("random.txt", "utf8", function(error, data) {
+      case "do-what-it-says": 
+        fs.readFile("random.txt", "utf8", function(error, data) {
+          if (!error) { 
+            // Then split data into array by commas
+            var dataArr = data.split(","); 
 
-          if (!error) {
-            // We will then print the contents of data
-            console.log(data);
-
-            // Then split it by commas (to make it more readable)
-            var dataArr = data.split(",");
-
-            // We will then re-display the content as an array for later use.
-            console.log(dataArr);
+            //send results back to this function to perform... if not "do-what-it-says"
+            if (dataArr[0] !== "do-what-it-says") {
+              liri.performAction(dataArr[0], dataArr[1]);
+            }else{
+              console.log('Hey! What are you doing, trying to send me into recursion hell?!');
+            }
 
           }else{
             console.log('Sorry, I had an issue processing this request, please try again or run another function.');
           }
 
-        });*/
+        });
         break;
 
       default:
